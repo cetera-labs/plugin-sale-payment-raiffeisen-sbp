@@ -5,7 +5,3 @@ if (class_exists("\Sale\Payment")) {
     } catch (\Exception $e) {
     }
 }
-
-// Подключаем каталог с переводами модуля
-$t = $this->getTranslator();
-$t->addTranslation(__DIR__.'/lang');

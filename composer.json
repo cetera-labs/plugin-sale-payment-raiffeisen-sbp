@@ -1,6 +1,6 @@
 {
     "name": "cetera-labs/plugin-sale-payment-raiffeisen",
-    "description": "Raiffeisen for E-Commerce Plugin",
+    "description": "Системы Платежей Raiffeisen for E-Commerce Plugin",
     "type": "cetera-cms-plugin",
     "license": "MIT",
     "authors": [
@@ -24,7 +24,7 @@
 
     "extra": {
         "name": "sale-payment-raiffeisen",
-        "title": "Raiffeisen for E-Commerce",
+        "title": "Системы Платежей Raiffeisen for E-Commerce",
         "description": ""
     }
 }
