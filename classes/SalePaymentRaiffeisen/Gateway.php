@@ -31,7 +31,14 @@ class Gateway extends \Sale\PaymentGateway\GatewayAbstract {
 						["ONLY_ACQUIRING",$t->_('Эквайринг')],
 						["ONLY_SBP",$t->_('СБП')],
 					],
-				],                
+				], 
+                [
+                    "xtype"          => 'checkbox',
+                    "name"           => 'test_mode',
+                    "boxLabel"       => 'тестовый режим',
+                    "inputValue"     => 1,
+                    "uncheckeDvalue" => 0
+                ],                
 			]			
 		];
 	}
