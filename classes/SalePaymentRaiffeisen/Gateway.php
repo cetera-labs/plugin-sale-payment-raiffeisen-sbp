@@ -45,6 +45,7 @@ class Gateway extends \Sale\PaymentGateway\GatewayAbstract {
 	
 	public function pay( $return = '', $fail = '' )
 	{
+        //https://github.com/Raiffeisen-DGTL/ecom-sdk-javascript
         if (!$return) $return = \Cetera\Application::getInstance()->getServer()->getFullUrl();
         if (!$fail) $fail = \Cetera\Application::getInstance()->getServer()->getFullUrl();
         
