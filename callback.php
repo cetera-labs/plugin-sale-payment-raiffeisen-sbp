@@ -1,5 +1,4 @@
 <?php
-<?php
 $application->connectDb();
 $application->initSession();
 $application->initPlugins();
