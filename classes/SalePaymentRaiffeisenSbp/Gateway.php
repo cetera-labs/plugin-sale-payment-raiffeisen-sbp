@@ -8,7 +8,6 @@ class Gateway extends \Sale\PaymentGateway\GatewayAbstract {
     
 	public static function getInfo()
 	{
-		$t = \Cetera\Application::getInstance()->getTranslator();
 		
 		return [
 			'name'        => 'Системы Платежей Raiffeisen',
@@ -16,22 +15,17 @@ class Gateway extends \Sale\PaymentGateway\GatewayAbstract {
 			'icon'        => '/plugins/sale-payment-raiffeisen-sbp/images/icon.png',
 			'params' => [	
 				[
-					'name'       => 'publicId',
+					'name'       => 'sbpMerchantId',
 					'xtype'      => 'textfield',
-					'fieldLabel' => $t->_('Идентификатор магазина *'),
+					'fieldLabel' => 'Идентификатор зарегистрированного партнёра в СБП *',
 					'allowBlank' => false,
 				],
 				[
-					'name'       => 'paymentMethod',
-					'fieldLabel' => $t->_('Выбор метода оплаты'),
-					'xtype'      => 'combobox',
-					'value'      => '',
-					'store'      => [
-						['',  $t->_('Эквайринг и СБП')],
-						["ONLY_ACQUIRING",$t->_('Эквайринг')],
-						["ONLY_SBP",$t->_('СБП')],
-					],
-				], 
+					'name'       => 'account',
+					'xtype'      => 'textfield',
+					'fieldLabel' => 'Счет для зачисления',
+					'allowBlank' => true,
+				],                
                 [
                     "xtype"          => 'checkbox',
                     "name"           => 'test_mode',
@@ -50,26 +44,25 @@ class Gateway extends \Sale\PaymentGateway\GatewayAbstract {
         if (!$fail) $fail = \Cetera\Application::getInstance()->getServer()->getFullUrl();
         
         $data = [
-            'publicId'      => $this->params['publicId'],
-            'paymentMethod' => $this->params['paymentMethod'],
-            'orderId'       => $this->order->id,
+            'sbpMerchantId' => $this->params['sbpMerchantId'],
+            'account'       => $this->params['account'],
+            'order'         => $this->order->id,
             'amount'        => $this->order->getTotal(),
-            'successUrl'    => $return,
-            'failUrl'       => $fail,
+            'currency'      => $this->order->getCurrency()->code,
         ]; 
 
         $url = $this->params["test_mode"]?self::GATEWAY_TEST:self::GATEWAY_PRODUCTION;
         
         $client = new \GuzzleHttp\Client();
-		$response = $client->request('GET', $url.'/register.do', [
+		$response = $client->request('POST', $url.'/api/sbp/v1/qr/register', [
 			'verify' => false,
-			'query' => $data,
+			'json' => $data,
 		]); 
 
 		$res = json_decode($response->getBody(), true);	
 
         print_r($res);
-        
+        die();
 	}	
 
 }
