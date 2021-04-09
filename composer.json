@@ -1,5 +1,5 @@
 {
-    "name": "cetera-labs/plugin-sale-payment-raiffeisen",
+    "name": "cetera-labs/plugin-sale-payment-raiffeisen-sbp",
     "description": "Системы Платежей Raiffeisen for E-Commerce Plugin",
     "type": "cetera-cms-plugin",
     "license": "MIT",
@@ -23,7 +23,7 @@
     },
 
     "extra": {
-        "name": "sale-payment-raiffeisen",
+        "name": "sale-payment-raiffeisen-sbp",
         "title": "Системы Платежей Raiffeisen for E-Commerce",
         "description": ""
     }
