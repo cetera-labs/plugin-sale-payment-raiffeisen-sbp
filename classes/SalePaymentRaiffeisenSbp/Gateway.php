@@ -1,5 +1,5 @@
 <?php
-namespace SalePaymentRaiffeisen;
+namespace SalePaymentRaiffeisenSbp;
 
 class Gateway extends \Sale\PaymentGateway\GatewayAbstract {
 	
