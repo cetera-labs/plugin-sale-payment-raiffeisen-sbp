@@ -21,11 +21,23 @@ class Gateway extends \Sale\PaymentGateway\GatewayAbstract {
 					'allowBlank' => false,
 				],
 				[
+					'name'       => 'secretKey',
+					'xtype'      => 'textfield',
+					'fieldLabel' => 'Секретный ключ',
+					'allowBlank' => false,
+				],                
+				[
 					'name'       => 'account',
 					'xtype'      => 'textfield',
 					'fieldLabel' => 'Счет для зачисления',
 					'allowBlank' => true,
-				],                
+				],        
+				[
+					'name'       => 'url',
+					'xtype'      => 'textfield',
+					'fieldLabel' => 'URL страницы для отображения QR-кода',
+					'allowBlank' => true,
+				],                 
                 [
                     "xtype"          => 'checkbox',
                     "name"           => 'test_mode',
@@ -49,19 +61,27 @@ class Gateway extends \Sale\PaymentGateway\GatewayAbstract {
             'order'         => $this->order->id,
             'amount'        => $this->order->getTotal(),
             'currency'      => $this->order->getCurrency()->code,
+            'paymentDetails'=> 'Заказ №'.$this->order->id
         ]; 
 
         $url = $this->params["test_mode"]?self::GATEWAY_TEST:self::GATEWAY_PRODUCTION;
         
         $client = new \GuzzleHttp\Client();
-		$response = $client->request('POST', $url.'/api/sbp/v1/qr/register', [
-			'verify' => false,
-			'json' => $data,
-		]); 
+        $response = $client->request('POST', $url.'/api/sbp/v1/qr/register', [
+            'verify' => false,
+            'json' => $data,
+        ]); 
 
-		$res = json_decode($response->getBody(), true);	
+        $res = json_decode($response->getBody(), true);	
 
-        print_r($res);
+        $this->saveTransaction($res['qrId'], $res);
+
+        if ($this->params['url']) {
+            header('Location: '.$this->params['url'].'?qr='.urlencode($res['qrUrl']));
+        }
+        else {
+            header('Location: '.$res['qrUrl']);
+        }
         die();
 	}	
 

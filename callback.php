@@ -9,8 +9,38 @@ try {
     
     $source = file_get_contents('php://input');	
     $requestBody = json_decode($source, true);
+
+    $headers = getallheaders();
     
     print_r($requestBody);
+    print_r($headers);
+
+	$order = \Sale\Order::getById( $requestBody['order'] );
+	$gateway = $order->getPaymentGateway();
+    
+    $oid = $gateway->getOrderByTransaction( $requestBody['qrId'] );
+    if ($oid != $order->id) {
+        throw new \Exception('Order check failed');
+    }
+    
+    $hash = hash_hmac ( "sha256" , implode('|',[
+        $requestBody['amount'],
+        $requestBody['sbpMerchantId'],
+        $requestBody['order'],
+        $requestBody['paymentStatus'],
+        $requestBody['transactionDate'],
+    ]), $gateway->params['secretKey']);
+    
+    if ($hash != $headers['X-Api-Signature-SHA256']) {
+        throw new \Exception('X-Api-Signature check failed');
+    }
+		
+	$gateway->saveTransaction($requestBody['qrId'], $requestBody);
+		
+	// Операция подтверждена
+	if  ($requestBody['paymentStatus'] == 'SUCCESS') {
+		$order->paymentSuccess();
+	}
 	
 	header("HTTP/1.1 200 OK");
 	print 'OK';		
