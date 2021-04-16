@@ -16,7 +16,7 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
 				[
 					'name'       => 'sbpMerchantId',
 					'xtype'      => 'textfield',
-					'fieldLabel' => 'Идентификатор зарегистрированного партнёра в СБП *',
+					'fieldLabel' => 'Идентификатор партнёра в СБП *',
 					'allowBlank' => false,
 				],
 				[
