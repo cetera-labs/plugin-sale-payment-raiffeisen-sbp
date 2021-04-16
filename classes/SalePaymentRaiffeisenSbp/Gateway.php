@@ -44,6 +44,11 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
                     "inputValue"     => 1,
                     "uncheckeDvalue" => 0
                 ],
+                [
+					'xtype'      => 'displayfield',
+					'fieldLabel' => 'URL-адрес для callback уведомлений',
+					'value'      => '//'.$_SERVER['HTTP_HOST'].'/cms/plugins/sale-payment-raiffeisen-sbp/callback.php'
+				],	                
 			]			
 		];
 	}
