@@ -40,6 +40,10 @@ try {
 	// Операция подтверждена
 	if  ($requestBody['paymentStatus'] == 'SUCCESS') {
 		$order->paymentSuccess();
+        
+        if ($gateway->params['atol']) {
+            $gateway->sendRecieptSell();
+        }
 	}
 	
 	header("HTTP/1.1 200 OK");
