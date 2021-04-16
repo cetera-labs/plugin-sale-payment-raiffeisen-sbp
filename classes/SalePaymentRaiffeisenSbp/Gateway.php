@@ -9,7 +9,7 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
 	public static function getInfo2()
 	{
 		return [
-			'name'        => 'Системы Платежей Raiffeisen',
+			'name'        => 'Система быстрых платежей Raiffeisen',
 			'description' => '',
 			'icon'        => '/plugins/sale-payment-raiffeisen-sbp/images/icon.png',
 			'params' => [	
