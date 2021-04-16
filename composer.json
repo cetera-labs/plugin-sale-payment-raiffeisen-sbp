@@ -11,7 +11,8 @@
         }
     ],
     "require": {
-        "cetera-labs/plugin-sale": "dev-master"
+        "cetera-labs/plugin-sale": "dev-master",
+        "retailcrm/atol-online-client": "*"
     },
     
     "minimum-stability": "dev",
