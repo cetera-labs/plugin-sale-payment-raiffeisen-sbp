@@ -42,7 +42,8 @@ try {
 		$order->paymentSuccess();
         
         if ($gateway->params['atol']) {
-            $gateway->sendRecieptSell();
+            $res = $gateway->sendRecieptSell();
+            $gateway->saveTransaction($requestBody['qrId'], $res);
         }
 	}
 	
