@@ -65,7 +65,8 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
             'order'         => $this->order->id,
             'amount'        => $this->order->getTotal(),
             'currency'      => $this->order->getCurrency()->code,
-            'paymentDetails'=> 'Заказ №'.$this->order->id
+            'paymentDetails'=> 'Заказ №'.$this->order->id,
+            'additionalInfo'=> 'Заказ №'.$this->order->id,
         ]; 
 
         $url = $this->params["test_mode"]?self::GATEWAY_TEST:self::GATEWAY_PRODUCTION;
