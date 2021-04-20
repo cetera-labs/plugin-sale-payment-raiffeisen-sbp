@@ -82,7 +82,7 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
         $this->saveTransaction($res['qrId'], $res);
 
         if ($this->params['url']) {
-            header('Location: '.$this->params['url'].'?qr='.urlencode($res['qrUrl']));
+            header('Location: '.$this->params['url'].'?qrId='.urlencode($res['qrId']).'&qrUrl='.urlencode($res['qrUrl']));
         }
         else {
             header('Location: '.$res['qrUrl']);
