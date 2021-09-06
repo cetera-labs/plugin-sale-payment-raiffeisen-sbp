@@ -103,28 +103,11 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
 		];
         
         if ($items !== null) {
-            $i = [];
             $amount = 0;
             foreach ($items as $key => $item) {
                 if ($item['quantity_refund'] <= 0) continue;
-                $price = $item['price'] * 100;
-                $amount += intval($item['quantity_refund']) * $price;
-                $i[] = [
-                    'positionId' => $key+1,
-                    'name'       => $item['name'],
-                    'quantity' => [
-                        'value'   => intval($item['quantity_refund']),
-                        'measure' => 'шт.'
-                    ],
-                    'itemAmount' => intval($item['quantity_refund']) * $price,  
-                    'itemCode'   => $item['id'], 
-                    'itemPrice'  => $price, 
-                ];
+                $amount += intval($item['quantity_refund']) * $item['price'];
             }
-            
-            $params['refundItems'] = json_encode([
-                'items' => $i
-            ]); 
             $params['amount'] = $amount;
         }
         
@@ -143,6 +126,14 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
         $res = json_decode($response->getBody(), true);
 
 		if (!$res['errorCode']) {
+            
+            $this->saveTransaction($params['refundId'], $res);
+            
+            if ($this->params['atol']) {
+                $res = $this->sendRecieptRefund( $items );
+                $gateway->saveTransaction($params['refundId'], $res);
+            }
+            
 			return;		
 		}
 		else {
