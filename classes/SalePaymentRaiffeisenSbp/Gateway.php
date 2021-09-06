@@ -88,6 +88,67 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
             header('Location: '.$res['qrUrl']);
         }
         die();
-	}	
+	}
+
+    public static function isRefundAllowed() {
+        return true;
+    }
+
+    public function refund( $items = null ) {
+              
+		$params = [
+            'refundId'  => 'refund'.$this->getOrderId(),
+            'order'     => $this->getOrderId(),
+            'amount'    => $this->order->getTotal(),
+		];
+        
+        if ($items !== null) {
+            $i = [];
+            $amount = 0;
+            foreach ($items as $key => $item) {
+                if ($item['quantity_refund'] <= 0) continue;
+                $price = $item['price'] * 100;
+                $amount += intval($item['quantity_refund']) * $price;
+                $i[] = [
+                    'positionId' => $key+1,
+                    'name'       => $item['name'],
+                    'quantity' => [
+                        'value'   => intval($item['quantity_refund']),
+                        'measure' => 'шт.'
+                    ],
+                    'itemAmount' => intval($item['quantity_refund']) * $price,  
+                    'itemCode'   => $item['id'], 
+                    'itemPrice'  => $price, 
+                ];
+            }
+            
+            $params['refundItems'] = json_encode([
+                'items' => $i
+            ]); 
+            $params['amount'] = $amount;
+        }
+        
+        //print_r($params);
+        //return;        
+
+        $url = $this->params["test_mode"]?self::TEST_URL:self::URL;
+        
+        $client = new \GuzzleHttp\Client();
+		$response = $client->request('POST', $url.'/api/sbp/v1/qr/refund', [
+			'verify' => false,
+			'form_params' => $params,
+            'headers' => [ 'Authorization' => "Bearer ".$this->params['secretKey'] ],
+		]);
+
+        $res = json_decode($response->getBody(), true);
+
+		if (!$res['errorCode']) {
+			return;		
+		}
+		else {
+            throw new \Exception($res['errorCode'].': '.$res['errorMessage']);
+		}        
+        
+    } 	
 
 }
