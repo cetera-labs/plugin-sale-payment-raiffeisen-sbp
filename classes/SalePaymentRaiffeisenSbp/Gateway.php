@@ -114,7 +114,7 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
         //print_r($params);
         //return;        
 
-        $url = $this->params["test_mode"]?self::TEST_URL:self::URL;
+        $url = $this->params["test_mode"]?self::GATEWAY_TEST:self::GATEWAY_PRODUCTION;
         
         $client = new \GuzzleHttp\Client();
 		$response = $client->request('POST', $url.'/api/sbp/v1/qr/refund', [
