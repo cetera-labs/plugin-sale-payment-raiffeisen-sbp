@@ -117,9 +117,9 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
         $url = $this->params["test_mode"]?self::GATEWAY_TEST:self::GATEWAY_PRODUCTION;
         
         $client = new \GuzzleHttp\Client();
-		$response = $client->request('POST', $url.'/api/sbp/v1/qr/refund', [
+		$response = $client->request('POST', $url.'/api/sbp/v1/refund', [
 			'verify' => false,
-			'form_params' => $params,
+			'json' => $params,
             'headers' => [ 'Authorization' => "Bearer ".$this->params['secretKey'] ],
 		]);
 
