@@ -97,8 +97,8 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
     public function refund( $items = null ) {
               
 		$params = [
-            'refundId'  => 'refund'.$this->getOrderId(),
-            'order'     => $this->getOrderId(),
+            'refundId'  => 'refund'.$this->order->id,
+            'order'     => $this->order->id,
             'amount'    => $this->order->getTotal(),
 		];
         
