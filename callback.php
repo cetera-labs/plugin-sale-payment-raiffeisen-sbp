@@ -59,11 +59,7 @@ try {
 	// Операция подтверждена
 	if  ($requestBody['paymentStatus'] == 'SUCCESS') {
 		$order->paymentSuccess();
-        
-        if ($gateway->params['atol']) {
-            $res = $gateway->sendRecieptSell();
-            $gateway->saveTransaction($requestBody['qrId'], $res);
-        }
+        $gateway->sendRecieptSell();
 	}
 	
 	header("HTTP/1.1 200 OK");
