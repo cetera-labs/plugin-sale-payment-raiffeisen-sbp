@@ -128,7 +128,7 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
 		if (!$res['errorCode']) {
             
             $this->saveTransaction($params['refundId'], $res);
-            $res = $this->sendRecieptRefund( $items );
+            $res = $this->sendReceiptRefund( $items );
             $this->saveTransaction($params['refundId'], $res);
             
 			return;		

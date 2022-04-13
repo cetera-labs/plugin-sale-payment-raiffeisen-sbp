@@ -59,7 +59,7 @@ try {
 	// Операция подтверждена
 	if  ($requestBody['paymentStatus'] == 'SUCCESS') {
 		$order->paymentSuccess();
-        $gateway->sendRecieptSell();
+        $gateway->sendReceiptSell();
 	}
 	
 	header("HTTP/1.1 200 OK");
