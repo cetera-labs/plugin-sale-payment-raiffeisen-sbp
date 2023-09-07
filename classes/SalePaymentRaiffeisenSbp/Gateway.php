@@ -68,9 +68,12 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
             'paymentDetails'=> 'Заказ №'.$this->order->id,
             'additionalInfo'=> 'Заказ №'.$this->order->id,
         ]; 
-
-        $url = $this->params["test_mode"]?self::GATEWAY_TEST:self::GATEWAY_PRODUCTION;
-        
+        if (getenv('RUN_MODE', true) === 'development') {
+            $url = self::GATEWAY_TEST;
+        }
+        else{
+            $url = (isset($this->params["test_mode"]) && $this->params["test_mode"])?self::GATEWAY_TEST:self::GATEWAY_PRODUCTION;
+        }
         $client = new \GuzzleHttp\Client();
         $response = $client->request('POST', $url.'/api/sbp/v1/qr/register', [
             'verify' => false,
@@ -114,8 +117,12 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
         //print_r($params);
         //return;        
 
-        $url = $this->params["test_mode"]?self::GATEWAY_TEST:self::GATEWAY_PRODUCTION;
-        
+        if (getenv('RUN_MODE', true) === 'development') {
+            $url = self::GATEWAY_TEST;
+        }
+        else{
+            $url = (isset($this->params["test_mode"]) && $this->params["test_mode"])?self::GATEWAY_TEST:self::GATEWAY_PRODUCTION;
+        }
         $client = new \GuzzleHttp\Client();
 		$response = $client->request('POST', $url.'/api/sbp/v1/refund', [
 			'verify' => false,
