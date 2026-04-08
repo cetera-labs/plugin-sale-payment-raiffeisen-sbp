@@ -36,7 +36,13 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
 					'xtype'      => 'textfield',
 					'fieldLabel' => 'URL страницы для отображения QR-кода',
 					'allowBlank' => true,
-				],                 
+				], 
+                [
+					'name'       => 'returnUrl',
+					'xtype'      => 'textfield',
+					'fieldLabel' => 'URL страницы для перенаправления после платежа',
+					'allowBlank' => true,
+				],                   
                 [
                     "xtype"          => 'checkbox',
                     "name"           => 'test_mode',
@@ -62,6 +68,7 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
         $data = [
             'sbpMerchantId' => $this->params['sbpMerchantId'],
             'account'       => $this->params['account'],
+            'redirectUrl'   =>$this->params['returnUrl'],
             'order'         => $this->order->id,
             'amount'        => $this->order->getTotal(),
             'currency'      => $this->order->getCurrency()->code,
@@ -132,7 +139,7 @@ class Gateway extends \Sale\PaymentGateway\GatewayAtol {
 
         $res = json_decode($response->getBody(), true);
 
-		if (!$res['errorCode']) {
+		if (!isset($res['errorCode'])) {
             
             $this->saveTransaction($params['refundId'], $res);
             $res = $this->sendReceiptRefund( $items );
