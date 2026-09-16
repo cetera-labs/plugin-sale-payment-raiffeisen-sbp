@@ -6,73 +6,97 @@ $application->initPlugins();
 ob_start();
 
 try {
-    
     $source = file_get_contents('php://input');	
     $requestBody = json_decode($source, true);
 
-    $headers = getallheaders();
-    
-    /*
-    $requestBody = [
-        'transactionId' => '156781',
-        'qrId' => 'AD100022A20MJ2TV9N79UESV97I091TO',
-        'sbpMerchantId' => 'MA0000091561',
-        'merchantId' => '1786926001',
-        'amount' => '1',
-        'currency' => 'RUB',
-        'transactionDate' => '2021-04-19T15:33:48+03:00',
-        'paymentStatus' => 'SUCCESS',
-        'additionalInfo' => '',
-        'order' => '59528',
-        'createDate' => '2021-04-19T15:31:59+03:00', 
-    ];
-    $headers = [
-        'X-Api-Signature-Sha256' => '491a68d56081262d083b1314abfc3e94de9ed361048b123aea75a7c57abe0fcb'
-    ];
-    */
-    print_r($requestBody);
-    print_r($headers);
 
-	$order = \Sale\Order::getById( $requestBody['order'] );
-	$gateway = $order->getPaymentGateway();
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new \Exception('Invalid JSON: ' . json_last_error_msg());
+    }
+
+
+    $headers = function_exists('getallheaders') ? getallheaders() : [];
+    $signature = null;
+    foreach ($headers as $key => $value) {
+        if (strtolower($key) === 'x-api-signature-sha256') {
+            $signature = $value;
+            break;
+        }
+    }
+    if (!$signature && isset($_SERVER['HTTP_X_API_SIGNATURE_SHA256'])) {
+        $signature = $_SERVER['HTTP_X_API_SIGNATURE_SHA256'];
+    }
     
-    $oid = $gateway->getOrderByTransaction( $requestBody['qrId'] );
+/*
+    print_r($requestBody);
+    print_r($headers);*/
+
+    $event = strtolower($requestBody['event'] ?? '');
+    $tx = $requestBody['transaction'] ?? [];
+
+    if ($event === 'payment') {
         
-    if ($oid != $order->id) {
-        throw new \Exception('Order check failed');
+        $orderId = $tx['orderId'] ?? null;
+        if (!$orderId) {
+            throw new \Exception('Order ID not found in webhook data');
+        }
+
+        $order = \Sale\Order::getById($orderId);
+        if (!$order) {
+            throw new \Exception('Order not found in database');
+        }
+        
+        $gateway = $order->getPaymentGateway();
+        
+        $qrId = $tx['paymentParams']['qrId'] ?? null;
+
+        if ($qrId) {
+            $oid = $gateway->getOrderByTransaction($qrId);
+            if ($oid != $order->id) {
+                throw new \Exception('Order check failed');
+            }
+        }
+        
+        $merchantIdForHash = $gateway->params['sbpMerchantId'] ?? $gateway->params['MerchantId'] ?? '';
+
+        $hash = hash_hmac("sha256", implode('|', [
+            $tx['amount'] ?? '',
+            $merchantIdForHash,
+            $orderId,
+            $tx['status']['value'] ?? '',
+            $tx['status']['date'] ?? '',
+        ]), $gateway->params['secretKey']);
+        
+        if ($hash !== $signature) {
+            throw new \Exception('X-Api-Signature check failed');
+        }
+            
+        $gateway->saveTransaction($qrId ?: ($tx['id'] ?? ''), $requestBody);
+            
+
+        if (strtoupper($tx['status']['value'] ?? '') === 'SUCCESS') {
+            $order->paymentSuccess();
+            $gateway->sendReceiptSell();
+        }
+        
+        header("HTTP/1.1 200 OK");
+        print 'OK';		
     }
-    
-    $hash = hash_hmac ( "sha256" , implode('|',[
-        $requestBody['amount'],
-        $requestBody['sbpMerchantId'],
-        $requestBody['order'],
-        $requestBody['paymentStatus'],
-        $requestBody['transactionDate'],
-    ]), $gateway->params['secretKey']);
-    
-    if ($hash != $headers['X-Api-Signature-Sha256']) {
-        throw new \Exception('X-Api-Signature check failed');
+    elseif ($event === 'refund') {
+        header("HTTP/1.1 200 OK");
+        print 'OK';
     }
-		
-	$gateway->saveTransaction($requestBody['qrId'], $requestBody);
-		
-	// Операция подтверждена
-	if  ($requestBody['paymentStatus'] == 'SUCCESS') {
-		$order->paymentSuccess();
-        $gateway->sendReceiptSell();
-	}
+    else {
+        header("HTTP/1.1 200 OK");
+        print 'Unknown event';
+    }
 	
-	header("HTTP/1.1 200 OK");
-	print 'OK';		
-	
+} catch (\Exception $e) {
+    header("HTTP/1.1 500 " . trim(preg_replace('/\s+/', ' ', $e->getMessage())));
+    print $e->getMessage();
 }
-catch (\Exception $e) {
-	
-	header( "HTTP/1.1 500 ".trim(preg_replace('/\s+/', ' ', $e->getMessage())) );
-	print $e->getMessage();
-	 
-}
+
 
 $data = ob_get_contents();
-ob_end_flush();
-file_put_contents(__DIR__.'/log'.time().'.txt', $data);
+ob_end_clean(); 
+/*file_put_contents(__DIR__.'/log_'.time().'.txt', $data);*/
