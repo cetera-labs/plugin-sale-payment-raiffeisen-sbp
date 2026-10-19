@@ -91,7 +91,13 @@ try {
         'signature'  => $signature ? 'present' : 'missing',
     ];
 
-    if ($event === 'payment') {
+    if ($event === 'payment' && !empty($tx['orderId']) && !ctype_digit((string)$tx['orderId'])) {
+        // Тем же подключением СБП могут пользоваться другие системы (например, кассы с GUID-номерами заказов):
+        // это не заказы сайта, отвечаем 200, чтобы банк не повторял уведомление
+        $log['skipped'] = 'not a site order';
+        header("HTTP/1.1 200 OK");
+        print 'Skipped';
+    } elseif ($event === 'payment') {
         $orderId = $tx['orderId'] ?? null;
         if (!$orderId) {
             throw new \Exception('Order ID not found in webhook data');
